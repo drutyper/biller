@@ -1,28 +1,112 @@
-== README
+Active Record notes
 
-This README would normally document whatever steps are necessary to get the
-application up and running.
+Run mysql before anything else by typing in:
 
-Things you may want to cover:
+mysql -uroot
 
-* Ruby version
+cd code
+cd biller
 
-* System dependencies
+Great resource to find rails info faster: 
 
-* Configuration
+http://api.rubyonrails.org
 
-* Database creation
+Active record is what helps communicate between your code and the database. It is the connection between the two. It allows the code to run and talk to the database
 
-* Database initialization
+Rails is a huge open source project but also uses other open source projects like Mysql2, postgresql and sqlite3 for it to work. Rails is the higher level portion making all these open sources work together to create databases for your web application.
 
-* How to run the test suite
+Active records “magic” in active record is builds SQL quiries which is run by arel.
+What its really doing is fancy ruby code taking your code and translating it into SQL queries, which is the language the database speaks.
 
-* Services (job queues, cache servers, search engines, etc.)
+TED (To Early to Design)
+Delay as many decisions as long as you possibly can
 
-* Deployment instructions
+Start project by inputing: rails new biller -d mysql
+since we are using mysql and not mysql lite
 
-* ...
+ran into a error installing mysql and had to run:brew install mysql
+this worked since this gem was not installed before
+
+When running rake db:create, I had to restart the mysql server since it wouldn’t start and gave me an error : "Couldn't create database for…”ERROR 2002 (HY000): Can't connect to local MySQL server through socket '/tmp/mysql.sock' (2)”
+Ran: "mysql.server restart" for it work
+
+biler is an app to track customers and bill against them
+
+rails generate model Customer
+
+Migrations managing changes in your database, makes it easier so you don’t have to write the SQL by hand, allowing your schema and changes to be database independent.
+ Active record will update the db/schema.rb to match the most up to date structure of the database
+
+Create models with: rails generate  model Employee or CreateTimeEntries
+This is the first thing to do to create where the information goes in your database
+
+-After building the models into our database, we can start creating the relationships
+
+Relationships are built in the models with ex. like customer.rb, employee.rb
+They create what are associated with those classes within the .rb files under models.
+relationships are based on tables
+
+to reload or refresh Rails c use: reload!
+
+This is how to do a hotkey shortcut in rails 
+t = TimeEntry.first
+e = Employee.first
+
+Tutorial went over has_one :time_entry opposed to has_many :time entries.
+The difference is has_many would output an array and has_one has only one value. 
+Ex. an employee has 1 email or a customer has 1 phone number.
+
+Please explain to me further what is the purpose for single table inheritance?
+Tutorial used t.string :type in the account migration
+
+Why did the tutorial create a remove_old_tables.rb to remove old tables? What is the purpose of it and how does it work?
+
+Tutorial changed customer and employee from ActiveRecord: :Base to inherit from Account
+
+HABTM = has_and_belongs_to_many
+This would be in relationship with ex.: subscriptions memberships, friendships, etc.
+
+2.1.5 :022 > p.employees
+
+Mysql2::Error: Table 'biller_development.employees_projects' doesn't exist: SHOW FULL FIELDS FROM `employees_projects`
+
+Ran into this error when trying to run p.employees in the rails console:
+
+ActiveRecord::StatementInvalid: Mysql2::Error: Table 'biller_development.employees_projects' doesn't exist: SHOW FULL FIELDS FROM `employees_projects`
+
+had to run rake db:migrate and also correct the employees_projects.rb from my mistake of naming :employee_projects rather than just :projects
+
+But I ran into a bigger problem where all the information I inputed was deleted when running this: rake db:drop db:create db:migrate —trace
+
+Now how do I go back and get that information I put in earlier like Employee information or customer information?
 
 
-Please feel free to use a different markup language if you do not plan to run
-<tt>rake doc:app</tt>.
+This forced me to go back and redo the customer creation, like so with rails c:
+Customer.create(name: "Bob's Factory", email: "bob@factory.com”)
+
+and employee:
+
+Employee.create(name: "Andrew", email: "drutyper@aol.com")
+
+So, I just remade the information again so that the commands work. Like Project.first.employees
+This would return an error since the information was erased from the database somehow and i think it has to do with 'rake db:drop db:create db:migrate —trace'
+
+When we started making the interface, the first thing was to create a controller
+inputted in: rails generate controller accounts
+This created accounts_controller.rb file in the controllers
+adding in def index
+ 		@accounts = Account.all
+
+Then we created the view for accounts. Added new file called index.html.erb
+This looks like what the customer will see on the front page as the interface of his account
+Correct me if I am wrong?
+
+After completing the index.html.erb
+went into routes.rb to add in the line: 
+resources :accounts to line 16
+
+Some questions about the html that ROR uses. They use a type of HTML I’m not used to or haven’t seen used before. Is this how ROR html works and some symbols I’m not used to are : <td>, to_s also they use <% end %> or <td><%= account.type.to_s %></td>
+I’d like to have a discussion about this and why ROR uses this type of HTML
+
+Have to go back and redo the time entries so it shows ups
+-Stopped at Has and Belongs to Many
